@@ -1,0 +1,20 @@
+body {
+  min-height: 100%;
+  padding-left: 100px;
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
+}
+
+.tooltip {
+  font-size: 10pt;
+  background-color: white;
+}
+
+.axis path, .axis line {
+  fill: None;
+  stroke: black;
+  shape-rendering: crispEdges;
+}
+
+.axis text {
+  font-size: 11px;
+}

@@ -1,7 +1,7 @@
 // import advanced from './data/advanced.json';
 // import per36 from './data/per36.json';
 
-function prunedData (error, per36) {
+function threeGraph (error, per36) {
   let width = 1200, height = 700, paddingBottom = 30, paddingLeft = 60;
   let attemptsScale = d3.scaleLinear()
     .domain([0.5, 12])
@@ -94,6 +94,97 @@ function prunedData (error, per36) {
     );
 }
 
+function usgGraph (error, usg) {
+  let width = 1200, height = 700, paddingBottom = 30, paddingLeft = 60;
+  let tsScale = d3.scaleLinear()
+    .domain([0.46, 0.66])
+    .range([paddingLeft, width-paddingBottom*2])
+
+  let astScale = d3.scaleLinear()
+    .domain([5, 65])
+    .range([height-paddingLeft, paddingBottom])
+
+  let usgArray = usg
+  .map(player => {
+    let index = player.Player.indexOf("\\");
+    return {
+      name: player.Player.substring(0, index),
+      usage: player['USG%'], 
+      ts: player['TS%'],
+      position: player.Pos,
+      team: player.Tm,
+      assist: player['AST%'],
+      x: tsScale(player['TS%']),
+      y: astScale(player['AST%']),
+      r: player['USG%']/3
+    }
+  })
+
+  let usgPlot = d3.select('#root')
+    .append('svg')
+    .attr('width', width)
+    .attr('height', height)
+
+  let xAxis = d3.axisBottom()
+    .scale(tsScale)
+
+  let yAxis = d3.axisLeft()
+    .scale(astScale)
+
+  let createXAxis = usgPlot.append('g')
+    .attr('class', 'axis')
+    .attr('transform', `translate(0, ${height - paddingBottom})`)
+    .call(xAxis)
+
+  let xAxisLabel = usgPlot.append('text')
+    .attr('transform', `translate(${width/2}, ${height})`)
+    .style('text-anchor', 'middle')
+    .text('True Shooting')
+    .classed('tooltip', true)
+
+  let createYAxis = usgPlot.append('g')
+    .attr('class', 'axis')
+    .attr('transform', `translate(${paddingLeft}, ${paddingBottom})`)
+    .call(yAxis)
+
+  let yAxisLabel = usgPlot.append('text')
+    .attr('transform', 'rotate(-90)')
+    .attr('y', 0)
+    .attr('x', 0 - (height/2))
+    .attr('dy', '1em')
+    .style('text-anchor', 'middle')
+    .text('Teammate Assist%')
+    .classed('tooltip', true)
+
+  let tooltip = d3.select("body")
+    .append("div")
+    .style("position", "absolute")
+    .style("z-index", "10")
+    .style("visibility", "hidden")
+    .classed('tooltip', true)
+    
+  let dataPoints = usgPlot.selectAll('circle')
+    .data(usgArray)
+    .enter()
+    .append('circle')
+    .attr('cx', d => d.x)
+    .attr('cy', d => d.y)
+    .attr('r', d => d.r)
+    .attr('fill', d => returnColor(d.team))
+    .on("mouseover", d => tooltip
+      .style("visibility", "visible")
+      .append('p')
+      .classed("tooltip", true)
+      .text(`${d.name}, ${d.team}, ${(d.usage)}% usage, ${(d.assist)}% assist, ${(d.ts*100).toFixed(1)}% true shooting`)
+    )
+    .on("mousemove", () => tooltip.style("top", (d3.event.pageY-10)+"px")
+      .style("left",(d3.event.pageX+10)+"px"))
+    .on("mouseout", () => tooltip.style("visibility", "hidden")
+      .selectAll('p')
+      .remove()
+    );
+}
+
 function returnColor (team) {
   switch (team) {
     case "ATL": 
@@ -160,6 +251,28 @@ function returnColor (team) {
       return '#002B5C'
   }
 }
+function runAll (graph) {
+  d3.select('#root')
+    .selectAll('svg')
+    .remove()
 
-d3.json('./data/per36.json', prunedData)
+  let graphTypes = ['3 Point Attempts vs. Percent', 'Usage vs. Assists vs. True Shooting']
+  let buttonCheck = d3.select('#button-container')
+    .selectAll('button')
+    .data(graphTypes)
+    .enter()
+    .append('button')
+    .classed('graph-select', true)
+    .text(d => d)
+    .on('click', d => runAll(d))
+
+  if (graph === '3 Point Attempts vs. Percent') {
+    d3.json('./data/per36.json', threeGraph)
+  }
+  else if (graph === 'Usage vs. Assists vs. True Shooting') {
+    d3.json('./data/advancedUsgLeaders.json', usgGraph)
+  }
+}
+
+runAll();
 

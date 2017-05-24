@@ -18,3 +18,8 @@ body {
 .axis text {
   font-size: 11px;
 }
+
+.tooltip p {
+  padding: 0;
+  margin: 0;
+}

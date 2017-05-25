@@ -2,15 +2,18 @@
 // import per36 from './data/per36.json';
 
 function threeGraph (error, per36) {
-  let width = 1200, height = 700, paddingBottom = 30, paddingLeft = 60;
+  let paddingLeft = 60;
+  let paddingBottom = 60;
+  let height = 700;
+  let width = 1200;
   let attemptsScale = d3.scaleLinear()
     .domain([0.5, 12])
     // .domain([0, 350])
-    .range([paddingLeft, width-paddingBottom*2])
+    .range([paddingLeft, width - paddingLeft])
 
   let percentScale = d3.scaleLinear()
-    .domain([0.15, 0.5])
-    .range([height-paddingLeft, paddingBottom])
+    .domain([0.15, 0.55])
+    .range([height - paddingBottom, paddingBottom])
 
   let threeArray = per36
   .filter(player => player['3PA'] >= 1 && player.MP >=820)
@@ -29,7 +32,7 @@ function threeGraph (error, per36) {
     }
   })
 
-  let threePlot = d3.select('#root')
+  let threePlot = d3.select('.svg-container')
     .append('svg')
     .attr('width', width)
     .attr('height', height)
@@ -46,14 +49,14 @@ function threeGraph (error, per36) {
     .call(xAxis)
 
   let xAxisLabel = threePlot.append('text')
-    .attr('transform', `translate(${width/2}, ${height})`)
+    .attr('transform', `translate(${(width-paddingLeft)/2 + paddingLeft}, ${height - paddingBottom/2})`)
     .style('text-anchor', 'middle')
     .text('3PA Per 36 Mins')
     .classed('tooltip', true)
 
   let createYAxis = threePlot.append('g')
     .attr('class', 'axis')
-    .attr('transform', `translate(${paddingLeft}, ${paddingBottom})`)
+    .attr('transform', `translate(${paddingLeft}, 0)`)
     .call(yAxis)
 
   let yAxisLabel = threePlot.append('text')
@@ -78,7 +81,7 @@ function threeGraph (error, per36) {
     .append('circle')
     .attr('cx', d => d.x)
     .attr('cy', d => d.y)
-    .attr('r', 3)
+    .attr('r', 4)
     .attr('fill', d => returnColor(d.team))
     .on("mouseover", d => tooltip
       .style("visibility", "visible")
@@ -95,14 +98,21 @@ function threeGraph (error, per36) {
 }
 
 function usgGraph (error, usg) {
-  let width = 1200, height = 700, paddingBottom = 30, paddingLeft = 60;
-  let tsScale = d3.scaleLinear()
-    .domain([0.46, 0.66])
-    .range([paddingLeft, width-paddingBottom*2])
+  let paddingLeft = 60;
+  let paddingBottom = 60;
+  let height = 700;
+  let width = 1200;
+  let usgScale = d3.scaleLinear()
+    .domain([20, 44])
+    .range([paddingLeft, width - paddingLeft])
 
   let astScale = d3.scaleLinear()
-    .domain([5, 65])
-    .range([height-paddingLeft, paddingBottom])
+    .domain([5, 60])
+    .range([height - paddingBottom, paddingBottom])
+
+  let TSScale = d3.scaleLinear()
+    .domain([0.4, 0.7])
+    .range([4, 14])
 
   let usgArray = usg
   .map(player => {
@@ -114,19 +124,19 @@ function usgGraph (error, usg) {
       position: player.Pos,
       team: player.Tm,
       assist: player['AST%'],
-      x: tsScale(player['TS%']),
+      x: usgScale(player['USG%']),
       y: astScale(player['AST%']),
-      r: player['USG%']/3
+      r: TSScale([player['TS%']])
     }
   })
-
-  let usgPlot = d3.select('#root')
+  
+  let usgPlot = d3.select('.svg-container')
     .append('svg')
     .attr('width', width)
     .attr('height', height)
 
   let xAxis = d3.axisBottom()
-    .scale(tsScale)
+    .scale(usgScale)
 
   let yAxis = d3.axisLeft()
     .scale(astScale)
@@ -137,14 +147,14 @@ function usgGraph (error, usg) {
     .call(xAxis)
 
   let xAxisLabel = usgPlot.append('text')
-    .attr('transform', `translate(${width/2}, ${height})`)
+    .attr('transform', `translate(${(width-paddingLeft)/2 + paddingLeft}, ${height - paddingBottom/2})`)
     .style('text-anchor', 'middle')
-    .text('True Shooting')
+    .text('Usage %')
     .classed('tooltip', true)
 
   let createYAxis = usgPlot.append('g')
     .attr('class', 'axis')
-    .attr('transform', `translate(${paddingLeft}, ${paddingBottom})`)
+    .attr('transform', `translate(${paddingLeft}, 0)`)
     .call(yAxis)
 
   let yAxisLabel = usgPlot.append('text')
@@ -252,12 +262,12 @@ function returnColor (team) {
   }
 }
 function runAll (graph) {
-  d3.select('#root')
+  d3.select('.svg-container')
     .selectAll('svg')
     .remove()
 
   let graphTypes = ['3 Point Attempts vs. Percent', 'Usage vs. Assists vs. True Shooting']
-  let buttonCheck = d3.select('#button-container')
+  let buttonCheck = d3.select('.button-container')
     .selectAll('button')
     .data(graphTypes)
     .enter()

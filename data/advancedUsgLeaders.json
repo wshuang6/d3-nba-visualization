@@ -260,14 +260,14 @@
    "USG%": 28
  },
  {
-   "Player": "Jordan Clarkson\\clarkjo01",
+   "Player": "Lou Williams\\willilo02",
    "Pos": "SG",
    "Tm": "LAL",
-   "MP": 2397,
-   "TS%": 0.526,
-   "AST%": 14.4,
-   "TOV%": 12.5,
-   "USG%": 23.3
+   "MP": 1403,
+   "TS%": 0.609,
+   "AST%": 22.3,
+   "TOV%": 11.9,
+   "USG%": 30.6
  },
  {
    "Player": "D'Angelo Russell\\russeda01",
@@ -500,14 +500,14 @@
    "USG%": 31.5
  },
  {
-   "Player": "Ben McLemore\\mclembe01",
-   "Pos": "SG",
+   "Player": "DeMarcus Cousins\\couside01",
+   "Pos": "C",
    "Tm": "SAC",
-   "MP": 1176,
-   "TS%": 0.538,
-   "AST%": 6.9,
-   "TOV%": 11.9,
-   "USG%": 20.1
+   "MP": 1891,
+   "TS%": 0.562,
+   "AST%": 27.4,
+   "TOV%": 13.2,
+   "USG%": 37.5
  },
  {
    "Player": "Rudy Gay\\gayru01",
@@ -558,36 +558,6 @@
    "AST%": 20.6,
    "TOV%": 9,
    "USG%": 34.3
- },
- {
-   "Player": "Tyreke Evans\\evansty01",
-   "Pos": "SF",
-   "Tm": "TOT",
-   "MP": 788,
-   "TS%": 0.501,
-   "AST%": 25.9,
-   "TOV%": 12.9,
-   "USG%": 26.7
- },
- {
-   "Player": "Lou Williams\\willilo02",
-   "Pos": "SG",
-   "Tm": "TOT",
-   "MP": 1994,
-   "TS%": 0.593,
-   "AST%": 19.9,
-   "TOV%": 11.8,
-   "USG%": 29.1
- },
- {
-   "Player": "DeMarcus Cousins\\couside01",
-   "Pos": "C",
-   "Tm": "TOT",
-   "MP": 2465,
-   "TS%": 0.562,
-   "AST%": 25.8,
-   "TOV%": 13.5,
-   "USG%": 36.5
  },
  {
    "Player": "George Hill\\hillge01",

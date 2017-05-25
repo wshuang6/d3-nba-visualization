@@ -75,12 +75,30 @@ function threeGraph (error, per36) {
     .style("visibility", "hidden")
     .classed('tooltip', true)
     
+  let dummyX = {};
+  let dummyY = {};
+
+  function transitionX (d, duration) {
+    d3.select(dummyX).transition()
+    .duration(duration)
+    .attr('cx', () => d.x)
+  }
+
+  function transitionY (d, duration) {
+    d3.select(dummyY).transition()
+    .duration(duration)
+    .attr('cx', () => d.y)
+    .ease(d3.easeCircleOut)
+  }
+
   let dataPoints = threePlot.selectAll('circle')
     .data(threeArray)
     .enter()
     .append('circle')
+    // .attr('cx', 4 + paddingLeft)
     .attr('cx', d => d.x)
-    .attr('cy', d => d.y)
+    .attr('cy', 4)
+    // .attr('cy', d => d.y)
     .attr('r', 4)
     .attr('fill', d => returnColor(d.team))
     .on("mouseover", d => tooltip
@@ -94,7 +112,22 @@ function threeGraph (error, per36) {
     .on("mouseout", () => tooltip.style("visibility", "hidden")
       .selectAll('p')
       .remove()
-    );
+    )
+    .transition()
+    .duration(1000)
+    // .duration(d => d.attempts*150)
+    // .attr('cx', d => d.x)
+    .attr('cy', d => d.y)
+    .ease(d3.easeBounceOut)
+    // .each(transitionX, 1000)
+    // .each(transitionY, 1000)
+
+  threePlot.append("text")
+    .attr("x", (width / 2))             
+    .attr("y", (paddingBottom))
+    .attr("text-anchor", "middle")  
+    .style("font-size", "18px") 
+    .text("Shooters Shoot");
 }
 
 function usgGraph (error, usg) {
@@ -132,8 +165,11 @@ function usgGraph (error, usg) {
   
   let usgPlot = d3.select('.svg-container')
     .append('svg')
-    .attr('width', width)
-    .attr('height', height)
+    // .attr('width', width)
+    // .attr('height', height)
+    .attr("preserveAspectRatio", "xMinYMin meet")
+    .attr("viewBox", "0 0 1200 600")
+    .classed("svg-content-responsive", true); 
 
   let xAxis = d3.axisBottom()
     .scale(usgScale)
@@ -163,7 +199,7 @@ function usgGraph (error, usg) {
     .attr('x', 0 - (height/2))
     .attr('dy', '1em')
     .style('text-anchor', 'middle')
-    .text('Teammate Assist%')
+    .text('Teammate Assist %')
     .classed('tooltip', true)
 
   let tooltip = d3.select("body")
@@ -179,7 +215,7 @@ function usgGraph (error, usg) {
     .append('circle')
     .attr('cx', d => d.x)
     .attr('cy', d => d.y)
-    .attr('r', d => d.r)
+    .attr('r', d => 0)
     .attr('fill', d => returnColor(d.team))
     .on("mouseover", d => tooltip
       .style("visibility", "visible")
@@ -192,7 +228,128 @@ function usgGraph (error, usg) {
     .on("mouseout", () => tooltip.style("visibility", "hidden")
       .selectAll('p')
       .remove()
-    );
+    )
+    .transition()
+    .ease(d3.easeCubicIn)
+    .duration(d => d.r * 300)
+    .attr('r', d => d.r)
+
+  usgPlot.append("text")
+    .attr("x", (width / 2))             
+    .attr("y", (paddingBottom))
+    .attr("text-anchor", "middle")  
+    .style("font-size", "18px") 
+    .text("Creators vs. Finishers vs. Westbrooks");
+}
+
+function teamGraph (error, team) {
+  let paddingLeft = 60;
+  let paddingBottom = 60;
+  let height = 700;
+  let width = 1200;
+  let usgScale = d3.scaleLinear()
+    .domain([20, 44])
+    .range([paddingLeft, width - paddingLeft])
+
+  let astScale = d3.scaleLinear()
+    .domain([5, 60])
+    .range([height - paddingBottom, paddingBottom])
+
+  let TSScale = d3.scaleLinear()
+    .domain([0.4, 0.7])
+    .range([4, 14])
+
+  let teamArray = team
+  .map(player => {
+    let index = player.Player.indexOf("\\");
+    return {
+      name: player.Player.substring(0, index),
+      usage: player['USG%'], 
+      ts: player['TS%'],
+      position: player.Pos,
+      team: player.Tm,
+      assist: player['AST%'],
+      x: usgScale(player['USG%']),
+      y: astScale(player['AST%']),
+      r: TSScale([player['TS%']])
+    }
+  })
+  
+  let teamPlot = d3.select('.svg-container')
+    .append('svg')
+    .attr('width', width)
+    .attr('height', height)
+
+
+  let xAxis = d3.axisBottom()
+    .scale(usgScale)
+
+  let yAxis = d3.axisLeft()
+    .scale(astScale)
+
+  let createXAxis = usgPlot.append('g')
+    .attr('class', 'axis')
+    .attr('transform', `translate(0, ${height - paddingBottom})`)
+    .call(xAxis)
+
+  let xAxisLabel = usgPlot.append('text')
+    .attr('transform', `translate(${(width-paddingLeft)/2 + paddingLeft}, ${height - paddingBottom/2})`)
+    .style('text-anchor', 'middle')
+    .text('Usage %')
+    .classed('tooltip', true)
+
+  let createYAxis = usgPlot.append('g')
+    .attr('class', 'axis')
+    .attr('transform', `translate(${paddingLeft}, 0)`)
+    .call(yAxis)
+
+  let yAxisLabel = usgPlot.append('text')
+    .attr('transform', 'rotate(-90)')
+    .attr('y', 0)
+    .attr('x', 0 - (height/2))
+    .attr('dy', '1em')
+    .style('text-anchor', 'middle')
+    .text('Teammate Assist %')
+    .classed('tooltip', true)
+
+  let tooltip = d3.select("body")
+    .append("div")
+    .style("position", "absolute")
+    .style("z-index", "10")
+    .style("visibility", "hidden")
+    .classed('tooltip', true)
+    
+  let dataPoints = usgPlot.selectAll('circle')
+    .data(usgArray)
+    .enter()
+    .append('circle')
+    .attr('cx', d => d.x)
+    .attr('cy', d => d.y)
+    .attr('r', d => 0)
+    .attr('fill', d => returnColor(d.team))
+    .on("mouseover", d => tooltip
+      .style("visibility", "visible")
+      .append('p')
+      .classed("tooltip", true)
+      .text(`${d.name}, ${d.team}, ${(d.usage)}% usage, ${(d.assist)}% assist, ${(d.ts*100).toFixed(1)}% true shooting`)
+    )
+    .on("mousemove", () => tooltip.style("top", (d3.event.pageY-10)+"px")
+      .style("left",(d3.event.pageX+10)+"px"))
+    .on("mouseout", () => tooltip.style("visibility", "hidden")
+      .selectAll('p')
+      .remove()
+    )
+    .transition()
+    .ease(d3.easeCubicIn)
+    .duration(d => d.r * 300)
+    .attr('r', d => d.r)
+
+  usgPlot.append("text")
+    .attr("x", (width / 2))             
+    .attr("y", (paddingBottom))
+    .attr("text-anchor", "middle")  
+    .style("font-size", "18px") 
+    .text("Creators vs. Finishers vs. Westbrooks");
 }
 
 function returnColor (team) {
@@ -261,12 +418,16 @@ function returnColor (team) {
       return '#002B5C'
   }
 }
+
 function runAll (graph) {
   d3.select('.svg-container')
     .selectAll('svg')
     .remove()
+  
+  d3.selectAll('.tooltip')
+    .remove()
 
-  let graphTypes = ['3 Point Attempts vs. Percent', 'Usage vs. Assists vs. True Shooting']
+  let graphTypes = ['3 Point Shooting', 'High Usage Players', 'Team Offense']
   let buttonCheck = d3.select('.button-container')
     .selectAll('button')
     .data(graphTypes)
@@ -276,10 +437,10 @@ function runAll (graph) {
     .text(d => d)
     .on('click', d => runAll(d))
 
-  if (graph === '3 Point Attempts vs. Percent') {
+  if (graph === '3 Point Shooting') {
     d3.json('./data/per36.json', threeGraph)
   }
-  else if (graph === 'Usage vs. Assists vs. True Shooting') {
+  else if (graph === 'High Usage Players') {
     d3.json('./data/advancedUsgLeaders.json', usgGraph)
   }
 }

@@ -34,7 +34,7 @@ function threeGraph (error, per36) {
   let explanation = d3.select('#root')
     .insert('p', ':first-child')
     .classed('info', true)
-    .text('This shows all players that met certain playing time and 3-point-attempt criteria to plot the number of 3s they took and the percent they made. Volume is often ignored even though being able to shoot a high volume is just as important of a factor in a player\'s 3-point shooting ability.')
+    .text('This takes all players that met certain playing time and 3-point-attempt criteria and plots the number of 3s they took and the percent they made. Volume is often ignored even though being able to shoot a high volume is just as important of a factor in a player\'s 3-point shooting ability.')
 
   let threePlot = d3.select('.svg-container')
     .append('svg')
@@ -290,7 +290,7 @@ function teamGraph (error, team, selectedTeam="Boston Celtics") {
     .attr('x', 0 - (height/2))
     .attr('dy', '1em')
     .style('text-anchor', 'middle')
-    .text('Percent (attempted or made)')
+    .text('Percent (attempted from location/made in location)')
     .classed('tooltip', true)
 
   let tooltip = d3.select("body")

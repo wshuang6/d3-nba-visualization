@@ -31,11 +31,18 @@ function threeGraph (error, per36) {
       y: percentScale(player['3P%'])
     }
   })
+  let explanation = d3.select('#root')
+    .insert('p', ':first-child')
+    .classed('info', true)
+    .text('This takes two players from each team that had the highest usage - the percent of possessions they finished (x axis) - and compares their usage with how many shots they created for teammates (y axis) and their efficiency of scoring (circle size)')
 
   let threePlot = d3.select('.svg-container')
     .append('svg')
-    .attr('width', width)
-    .attr('height', height)
+    // .attr('width', width)
+    // .attr('height', height)
+    .attr("preserveAspectRatio", "xMinYMin meet")
+    .attr("viewBox", "0 0 1200 700")
+    .classed("svg-content-responsive", true); 
 
   let xAxis = d3.axisBottom()
     .scale(attemptsScale)
@@ -74,22 +81,6 @@ function threeGraph (error, per36) {
     .style("z-index", "10")
     .style("visibility", "hidden")
     .classed('tooltip', true)
-    
-  let dummyX = {};
-  let dummyY = {};
-
-  function transitionX (d, duration) {
-    d3.select(dummyX).transition()
-    .duration(duration)
-    .attr('cx', () => d.x)
-  }
-
-  function transitionY (d, duration) {
-    d3.select(dummyY).transition()
-    .duration(duration)
-    .attr('cx', () => d.y)
-    .ease(d3.easeCircleOut)
-  }
 
   let dataPoints = threePlot.selectAll('circle')
     .data(threeArray)
@@ -132,7 +123,7 @@ function threeGraph (error, per36) {
 
 function usgGraph (error, usg) {
   let paddingLeft = 60;
-  let paddingBottom = 60;
+  let paddingBottom = 65;
   let height = 700;
   let width = 1200;
   let usgScale = d3.scaleLinear()
@@ -147,8 +138,7 @@ function usgGraph (error, usg) {
     .domain([0.4, 0.7])
     .range([4, 14])
 
-  let usgArray = usg
-  .map(player => {
+  let usgArray = usg.map(player => {
     let index = player.Player.indexOf("\\");
     return {
       name: player.Player.substring(0, index),
@@ -162,13 +152,17 @@ function usgGraph (error, usg) {
       r: TSScale([player['TS%']])
     }
   })
+  let explanation = d3.select('#root')
+    .insert('p', ':first-child')
+    .classed('info', true)
+    .text('This takes two players from each team that had the highest usage - the percent of possessions they finished (x axis) - and compares their usage with how many shots they created for teammates (y axis) and their efficiency of scoring (circle size)')
   
   let usgPlot = d3.select('.svg-container')
     .append('svg')
     // .attr('width', width)
     // .attr('height', height)
     .attr("preserveAspectRatio", "xMinYMin meet")
-    .attr("viewBox", "0 0 1200 600")
+    .attr("viewBox", "0 0 1200 700")
     .classed("svg-content-responsive", true); 
 
   let xAxis = d3.axisBottom()
@@ -235,81 +229,68 @@ function usgGraph (error, usg) {
     .attr('r', d => d.r)
 
   usgPlot.append("text")
-    .attr("x", (width / 2))             
+    .attr("x", ((width) / 2))             
     .attr("y", (paddingBottom))
     .attr("text-anchor", "middle")  
     .style("font-size", "18px") 
     .text("Creators vs. Finishers vs. Westbrooks");
 }
 
-function teamGraph (error, team) {
+function teamGraph (error, team, selectedTeam="Boston Celtics") {
   let paddingLeft = 60;
-  let paddingBottom = 60;
+  let paddingBottom = 65;
   let height = 700;
   let width = 1200;
-  let usgScale = d3.scaleLinear()
-    .domain([20, 44])
-    .range([paddingLeft, width - paddingLeft])
+  let distScale = d3.scaleLinear()
+    .domain([0, 26.75])
+    .range([paddingLeft, width-paddingLeft])
 
-  let astScale = d3.scaleLinear()
-    .domain([5, 60])
+  let percentScale = d3.scaleLinear()
+    .domain([0, 0.7])
     .range([height - paddingBottom, paddingBottom])
 
-  let TSScale = d3.scaleLinear()
-    .domain([0.4, 0.7])
-    .range([4, 14])
-
-  let teamArray = team
-  .map(player => {
-    let index = player.Player.indexOf("\\");
-    return {
-      name: player.Player.substring(0, index),
-      usage: player['USG%'], 
-      ts: player['TS%'],
-      position: player.Pos,
-      team: player.Tm,
-      assist: player['AST%'],
-      x: usgScale(player['USG%']),
-      y: astScale(player['AST%']),
-      r: TSScale([player['TS%']])
-    }
-  })
+  let explanation = d3.select('#root')
+    .insert('p', ':first-child')
+    .classed('info', true)
+    .text('This takes two players from each team that had the highest usage - the percent of possessions they finished (x axis) - and compares their usage with how many shots they created for teammates (y axis) and their efficiency of scoring (circle size)')
   
   let teamPlot = d3.select('.svg-container')
     .append('svg')
-    .attr('width', width)
-    .attr('height', height)
-
+    // .attr('width', width)
+    // .attr('height', height)
+    .attr("preserveAspectRatio", "xMinYMin meet")
+    .attr("viewBox", "0 0 1200 700")
+    .classed("svg-content-responsive", true); 
 
   let xAxis = d3.axisBottom()
-    .scale(usgScale)
+    .scale(distScale)
 
   let yAxis = d3.axisLeft()
-    .scale(astScale)
+    .scale(percentScale)
 
-  let createXAxis = usgPlot.append('g')
+  let createXAxis = teamPlot.append('g')
     .attr('class', 'axis')
     .attr('transform', `translate(0, ${height - paddingBottom})`)
     .call(xAxis)
 
-  let xAxisLabel = usgPlot.append('text')
+  let xAxisLabel = teamPlot.append('text')
     .attr('transform', `translate(${(width-paddingLeft)/2 + paddingLeft}, ${height - paddingBottom/2})`)
     .style('text-anchor', 'middle')
-    .text('Usage %')
+    .text('Distance (ft)')
     .classed('tooltip', true)
 
-  let createYAxis = usgPlot.append('g')
+  let createYAxis = teamPlot.append('g')
     .attr('class', 'axis')
     .attr('transform', `translate(${paddingLeft}, 0)`)
     .call(yAxis)
 
-  let yAxisLabel = usgPlot.append('text')
+  let yAxisLabel = teamPlot.append('text')
     .attr('transform', 'rotate(-90)')
     .attr('y', 0)
     .attr('x', 0 - (height/2))
     .attr('dy', '1em')
     .style('text-anchor', 'middle')
-    .text('Teammate Assist %')
+    .text('Percent (attempted or made)')
     .classed('tooltip', true)
 
   let tooltip = d3.select("body")
@@ -318,39 +299,108 @@ function teamGraph (error, team) {
     .style("z-index", "10")
     .style("visibility", "hidden")
     .classed('tooltip', true)
-    
-  let dataPoints = usgPlot.selectAll('circle')
-    .data(usgArray)
-    .enter()
-    .append('circle')
-    .attr('cx', d => d.x)
-    .attr('cy', d => d.y)
-    .attr('r', d => 0)
-    .attr('fill', d => returnColor(d.team))
-    .on("mouseover", d => tooltip
-      .style("visibility", "visible")
-      .append('p')
-      .classed("tooltip", true)
-      .text(`${d.name}, ${d.team}, ${(d.usage)}% usage, ${(d.assist)}% assist, ${(d.ts*100).toFixed(1)}% true shooting`)
-    )
-    .on("mousemove", () => tooltip.style("top", (d3.event.pageY-10)+"px")
-      .style("left",(d3.event.pageX+10)+"px"))
-    .on("mouseout", () => tooltip.style("visibility", "hidden")
-      .selectAll('p')
-      .remove()
-    )
-    .transition()
-    .ease(d3.easeCubicIn)
-    .duration(d => d.r * 300)
-    .attr('r', d => d.r)
+  
+  let returnObj = {};
 
-  usgPlot.append("text")
-    .attr("x", (width / 2))             
+  let distKeys = ['0-3', '3-10', '10-16', '16-3PT', '3P'];
+  let distX = [0, 3, 10, 16, 23.75];
+  let distWidthScaled = [3, 7, 6, 7.75, 3].map(item => distScale(item))
+  let distXScaled = distX.map(item => distScale(item))
+  for (let key in team) {
+    let item = team[key];
+    let data = [];
+    let pathDataShots = [];
+    let pathDataPercents = [];
+    for (let i = 0; i < 5; i++) {
+      data.push({
+        distKeys: distKeys[i],
+        distX: distX[i],
+        distWidthScaled: distWidthScaled[i],
+        distXScaled: distXScaled[i],
+        shots: item[returnShots(i, 'shots')],
+        percents: item[returnShots(i, 'percents')],
+        percentY: percentScale(0) - percentScale(item[returnShots(i, 'percents')]),
+        shotY: percentScale(0) - percentScale(item[returnShots(i, 'shots')])
+      })
+    }
+    returnObj[key] = {
+      avgDist: item['Dist.'],
+      avgFg: item['FG%'],
+      avgX: distScale(item['Dist.']),
+      avgY: percentScale(item['FG%']),
+      data
+    }
+  }
+  function returnShots (i, type) {
+    switch (i) {
+      case 0: 
+        return (type === 'shots') ? '0-3%' : '0-3FG';
+      case 1: 
+        return (type === 'shots') ? '3-10%' : '3-10FG';
+      case 2:
+        return (type === 'shots') ? '10-16%' : '10-16FG';
+      case 3: 
+        return (type === 'shots') ? '16 <3%' : '16 <3FG';
+      case 4:
+        return (type === 'shots') ? '3PFG' : '3P';
+    }
+  }
+  console.log(returnObj)
+
+  let dataPoints = teamPlot.selectAll('rect')
+    .data(returnObj['Boston Celtics'].data)
+    .enter()
+    // .path()
+    // .rect(d => d.distXScaled, d => d[selectedTeam].shotY, d => d.distWidthScaled, d => percentScale(0.7) - d[selectedTeam].shotY)
+  let locations = dataPoints.append('rect')
+    .attr('width', d => d.distWidthScaled - 60)
+    .attr('height', d => d.shotY)
+    .attr('x', d => d.distXScaled)
+    .attr('y', d => percentScale(0) - d.shotY)
+    .attr('fill', 'gray')
+    .attr('fill-opacity', 0.6)
+  let percents = dataPoints.append('rect')
+    .attr('width', d => d.distWidthScaled - 60)
+    .attr('height', d => d.percentY)
+    .attr('x', d => d.distXScaled)
+    .attr('y', d => percentScale(0) - d.percentY)
+    .attr('fill', 'green')
+    .attr('fill-opacity', 0.3)
+
+  
+  // let circles = teamPlot.selectAll('circle')
+  //   .data(returnObj)
+  //   .enter()
+  //   .append('circle')
+  //   .attr('cx', d => d[selectedTeam].avgX)
+  //   .attr('cy', d => d[selectedTeam].avgY)
+  //   .attr('r', 10)
+  //   .attr('fill', 'blue')
+
+    // .on("mouseover", d => tooltip
+    //   .style("visibility", "visible")
+    //   .append('p')
+    //   .classed("tooltip", true)
+    //   .text(`${d.name}, ${d.team}, ${(d.usage)}% usage, ${(d.assist)}% assist, ${(d.ts*100).toFixed(1)}% true shooting`)
+    // )
+    // .on("mousemove", () => tooltip.style("top", (d3.event.pageY-10)+"px")
+    //   .style("left",(d3.event.pageX+10)+"px"))
+    // .on("mouseout", () => tooltip.style("visibility", "hidden")
+    //   .selectAll('p')
+    //   .remove()
+    // )
+    // .transition()
+    // .ease(d3.easeCubicIn)
+    // .duration(d => d.r * 300)
+
+  teamPlot.append("text")
+    .attr("x", ((width) / 2))             
     .attr("y", (paddingBottom))
     .attr("text-anchor", "middle")  
     .style("font-size", "18px") 
-    .text("Creators vs. Finishers vs. Westbrooks");
+    .text(`${selectedTeam} Shot Locations`);
 }
+
 
 function returnColor (team) {
   switch (team) {
@@ -427,6 +477,9 @@ function runAll (graph) {
   d3.selectAll('.tooltip')
     .remove()
 
+  d3.selectAll('.info')
+    .remove()
+
   let graphTypes = ['3 Point Shooting', 'High Usage Players', 'Team Offense']
   let buttonCheck = d3.select('.button-container')
     .selectAll('button')
@@ -442,6 +495,9 @@ function runAll (graph) {
   }
   else if (graph === 'High Usage Players') {
     d3.json('./data/advancedUsgLeaders.json', usgGraph)
+  }
+  else if (graph === "Team Offense") {
+    d3.json('./data/teamShooting.json', teamGraph)
   }
 }
 

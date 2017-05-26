@@ -34,7 +34,7 @@ function threeGraph (error, per36) {
   let explanation = d3.select('#root')
     .insert('p', ':first-child')
     .classed('info', true)
-    .text('This takes two players from each team that had the highest usage - the percent of possessions they finished (x axis) - and compares their usage with how many shots they created for teammates (y axis) and their efficiency of scoring (circle size)')
+    .text('This shows all players that met certain playing time and 3-point-attempt criteria to plot the number of 3s they took and the percent they made. Volume is often ignored even though being able to shoot a high volume is just as important of a factor in a player\'s 3-point shooting ability.')
 
   let threePlot = d3.select('.svg-container')
     .append('svg')
@@ -105,7 +105,7 @@ function threeGraph (error, per36) {
       .remove()
     )
     .transition()
-    .duration(1000)
+    .duration(1500)
     // .duration(d => d.attempts*150)
     // .attr('cx', d => d.x)
     .attr('cy', d => d.y)
@@ -252,7 +252,7 @@ function teamGraph (error, team, selectedTeam="Boston Celtics") {
   let explanation = d3.select('#root')
     .insert('p', ':first-child')
     .classed('info', true)
-    .text('This takes two players from each team that had the highest usage - the percent of possessions they finished (x axis) - and compares their usage with how many shots they created for teammates (y axis) and their efficiency of scoring (circle size)')
+    .text('This plots a team\'s shot locations and shooting percentage in those locations to show where each team gets its offense. Currently it only displays one hard-coded team.')
   
   let teamPlot = d3.select('.svg-container')
     .append('svg')
@@ -345,10 +345,9 @@ function teamGraph (error, team, selectedTeam="Boston Celtics") {
         return (type === 'shots') ? '3PFG' : '3P';
     }
   }
-  console.log(returnObj)
 
   let dataPoints = teamPlot.selectAll('rect')
-    .data(returnObj['Boston Celtics'].data)
+    .data(returnObj['League Average'].data)
     .enter()
     // .path()
     // .rect(d => d.distXScaled, d => d[selectedTeam].shotY, d => d.distWidthScaled, d => percentScale(0.7) - d[selectedTeam].shotY)
@@ -359,6 +358,7 @@ function teamGraph (error, team, selectedTeam="Boston Celtics") {
     .attr('y', d => percentScale(0) - d.shotY)
     .attr('fill', 'gray')
     .attr('fill-opacity', 0.6)
+    .classed('locations', true)
   let percents = dataPoints.append('rect')
     .attr('width', d => d.distWidthScaled - 60)
     .attr('height', d => d.percentY)
@@ -366,8 +366,24 @@ function teamGraph (error, team, selectedTeam="Boston Celtics") {
     .attr('y', d => percentScale(0) - d.percentY)
     .attr('fill', 'green')
     .attr('fill-opacity', 0.3)
+    .classed('percents', true)
 
-  
+  function changeTeam (team) {
+    let updateLocations = teamPlot.selectAll('.locations')
+      .data(returnObj[team].data)
+      .transition()
+      .duration(1500)
+      .attr('height', d => d.shotY)
+      .attr('y', d => percentScale(0) - d.shotY)
+    let updatePercents = teamPlot.selectAll('.percents')
+      .data(returnObj[team].data)
+      .transition()
+      .duration(1500)
+      .attr('height', d => d.percentY)
+      .attr('y', d => percentScale(0) - d.percentY)
+  }
+
+  changeTeam('Boston Celtics')  
   // let circles = teamPlot.selectAll('circle')
   //   .data(returnObj)
   //   .enter()

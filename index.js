@@ -357,26 +357,28 @@ function teamGraph (error, team, selectedTeam="Boston Celtics") {
   let dataPoints = teamPlot.selectAll('rect')
     .data(returnObj['League Average'].data)
     .enter()
-    // .path()
-    // .rect(d => d.distXScaled, d => d[selectedTeam].shotY, d => d.distWidthScaled, d => percentScale(0.7) - d[selectedTeam].shotY)
-  let locations = dataPoints.append('rect')
-    .attr('width', d => d.distWidthScaled - 60)
-    .attr('height', d => d.shotY)
-    .attr('x', d => d.distXScaled)
-    .attr('y', d => percentScale(0) - d.shotY)
-    .attr('fill', 'gray')
-    .attr('fill-opacity', 0.6)
-    .classed('locations', true)
 
   let percents = dataPoints.append('rect')
     .attr('width', d => d.distWidthScaled - 60)
     .attr('height', d => d.percentY)
     .attr('x', d => d.distXScaled)
     .attr('y', d => percentScale(0) - d.percentY)
-    .attr('fill', 'green')
-    .attr('fill-opacity', 0.3)
+    .attr('fill', d => returnDualColor(d.team, true))
+    .attr('fill-opacity', d => returnOpacity(d.percentY, d.shotY))
     .classed('percents', true)
 
+  let locations = dataPoints.append('rect')
+    .attr('width', d => d.distWidthScaled - 60)
+    .attr('height', d => d.shotY)
+    .attr('x', d => d.distXScaled)
+    .attr('y', d => percentScale(0) - d.shotY)
+    .attr('fill', d => returnDualColor(d.team, false))
+    .attr('fill-opacity', d => returnOpacity(d.shotY, d.percentY))
+    .classed('locations', true)
+
+  function returnOpacity (current, other) {
+    return (current > other) ? 0.8 : 0.95
+  }
   let teamOffenseTitle = teamPlot.selectAll('.team-offense-title')
     .data(returnObj['League Average'].data)
     .enter()
@@ -391,18 +393,25 @@ function teamGraph (error, team, selectedTeam="Boston Celtics") {
   function changeTeam () {
     let team = d3.select('select')
       .property('value')
-    let updateLocations = teamPlot.selectAll('.locations')
-      .data(returnObj[team].data)
-      .transition()
-      .duration(1500)
-      .attr('height', d => d.shotY)
-      .attr('y', d => percentScale(0) - d.shotY)
+
     let updatePercents = teamPlot.selectAll('.percents')
       .data(returnObj[team].data)
       .transition()
       .duration(1500)
       .attr('height', d => d.percentY)
       .attr('y', d => percentScale(0) - d.percentY)
+      .attr('fill', d => returnDualColor(d.team, true))
+      .attr('fill-opacity', d => returnOpacity(d.percentY, d.shotY))
+
+    let updateLocations = teamPlot.selectAll('.locations')
+      .data(returnObj[team].data)
+      .transition()
+      .duration(1500)
+      .attr('height', d => d.shotY)
+      .attr('y', d => percentScale(0) - d.shotY)
+      .attr('fill', d => returnDualColor(d.team, false))
+      .attr('fill-opacity', d => returnOpacity(d.shotY, d.percentY))
+
     let updateName = teamPlot.selectAll('.team-offense-title')
       .data(returnObj[team].data)
       .text(d => `${d.team} Shot Locations`)
@@ -514,6 +523,73 @@ function returnColor (team) {
       return '#00471B'
     case "WAS": 
       return '#002B5C'
+  }
+}
+
+function returnDualColor (team, primary) {
+  switch (team) {
+    case "Atlanta Hawks": 
+      return primary ? '#E13A3E' : '#C4D600';
+    case "Boston Celtics": 
+      return primary ? '#008348' : 'lightgray';
+    case "Brooklyn Nets": 
+      return primary ? '#061922' : 'silver';
+    case "Charlotte Hornets": 
+      return primary ? '#1D1160' : '#008CA8';
+    case "Chicago Bulls": 
+      return primary ? '#CE1141' : '#061922';
+    case "Cleveland Cavaliers": 
+      return primary ? '#860038' : '#FDBB30';
+    case "Dallas Mavericks": 
+      return primary ? '#007DC5' : '#C4CED3';
+    case "Denver Nuggets": 
+      return primary ? '#4D90CD' : '#FDB927';
+    case "Detroit Pistons": 
+      return primary ? '#ED174C' : '#006BB6';
+    case "Golden State Warriors": 
+      return primary ? '#FDB927' : '#006BB6';
+    case "Houston Rockets": 
+      return primary ? '#CE1141' : '#C4CED3';
+    case "Indiana Pacers": 
+      return primary ? '#FFC633' : '#00275D';
+    case "Los Angeles Clippers": 
+      return primary ? '#ED174C' : '#006BB6';
+    case "Los Angeles Lakers": 
+      return primary ? '#FDB927' : '#552582';
+    case "Memphis Grizzlies": 
+      return primary ? '#0F586C' : '#7399C6';
+    case "Miami Heat": 
+      return primary ? '#98002E' : '#061922';
+    case "Milwaukee Bucks": 
+      return primary ? '#00471B' : '#F0EBD2';
+    case "Minnesota Timberwolves": 
+      return primary ? '#005083' : '#00A94F';
+    case "New Orleans Pelicans": 
+      return primary ? '#002B5C' : '#E31837';
+    case "New York Knicks": 
+      return primary ? '#006BB6' : '#F58426';
+    case "Oklahoma City Thunder": 
+      return primary ? '#007DC3' : '#F05133';
+    case "Orlando Magic": 
+      return primary ? '#007DC5' : '#C4CED3';
+    case "Philadelphia 76ers": 
+      return primary ? '#006BB6' : '#ED174C';
+    case "Phoenix Suns": 
+      return primary ? '#E56020' : '#1D1160';
+    case "Portland Trail Blazers": 
+      return primary ? '#E03A3E' : '#BAC3C9';
+    case "Sacramento Kings": 
+      return primary ? '#724C9F' : '#8E9090';
+    case "San Antonio Spurs": 
+      return primary ? '#BAC3C9' : '#061922';
+    case "Toronto Raptors": 
+      return primary ? '#CE1141' : '#061922';
+    case "Utah Jazz": 
+      return primary ? '#002B5C' : '#00471B';
+    case "Washington Wizards": 
+      return primary ? '#002B5C' : '#E31837';
+    case "League Average":
+      return primary ? '#0046AD' : '#D0103A';
   }
 }
 

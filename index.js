@@ -108,6 +108,7 @@ function threeGraph (error, per36) {
     .duration(1500)
     // .duration(d => d.attempts*150)
     // .attr('cx', d => d.x)
+    .delay(d => d.x*1.5)
     .attr('cy', d => d.y)
     .ease(d3.easeBounceOut)
     // .each(transitionX, 1000)
@@ -225,7 +226,9 @@ function usgGraph (error, usg) {
     )
     .transition()
     .ease(d3.easeCubicIn)
-    .duration(d => d.r * 300)
+    .duration(d => {console.log(d.r);
+      return d.r * 400})
+    .delay(d => (d.r > 9) ? d.r ^ 4 : d.r ^ 2)
     .attr('r', d => d.r)
 
   usgPlot.append("text")
@@ -249,11 +252,15 @@ function teamGraph (error, team, selectedTeam="Boston Celtics") {
     .domain([0, 0.7])
     .range([height - paddingBottom, paddingBottom])
 
+  let selectTeam = d3.select('#root')
+    .insert('select', ':first-child')
+    .on('change', changeTeam)
+
   let explanation = d3.select('#root')
     .insert('p', ':first-child')
     .classed('info', true)
-    .text('This plots a team\'s shot locations and shooting percentage in those locations to show where each team gets its offense. Currently it only displays one hard-coded team.')
-  
+    .text('This plots a team\'s shot locations and shooting percentage in those locations to show where each team gets its offense.')
+
   let teamPlot = d3.select('.svg-container')
     .append('svg')
     // .attr('width', width)
@@ -313,6 +320,7 @@ function teamGraph (error, team, selectedTeam="Boston Celtics") {
     let pathDataPercents = [];
     for (let i = 0; i < 5; i++) {
       data.push({
+        team: key,
         distKeys: distKeys[i],
         distX: distX[i],
         distWidthScaled: distWidthScaled[i],
@@ -359,6 +367,7 @@ function teamGraph (error, team, selectedTeam="Boston Celtics") {
     .attr('fill', 'gray')
     .attr('fill-opacity', 0.6)
     .classed('locations', true)
+
   let percents = dataPoints.append('rect')
     .attr('width', d => d.distWidthScaled - 60)
     .attr('height', d => d.percentY)
@@ -368,7 +377,20 @@ function teamGraph (error, team, selectedTeam="Boston Celtics") {
     .attr('fill-opacity', 0.3)
     .classed('percents', true)
 
-  function changeTeam (team) {
+  let teamOffenseTitle = teamPlot.selectAll('.team-offense-title')
+    .data(returnObj['League Average'].data)
+    .enter()
+    .append("text")
+    .classed('team-offense-title', true)
+    .attr("x", ((width) / 2))
+    .attr("y", (paddingBottom))
+    .attr("text-anchor", "middle")  
+    .style("font-size", "18px") 
+    .text(d => `${d.team} Shot Locations`);
+
+  function changeTeam () {
+    let team = d3.select('select')
+      .property('value')
     let updateLocations = teamPlot.selectAll('.locations')
       .data(returnObj[team].data)
       .transition()
@@ -381,9 +403,20 @@ function teamGraph (error, team, selectedTeam="Boston Celtics") {
       .duration(1500)
       .attr('height', d => d.percentY)
       .attr('y', d => percentScale(0) - d.percentY)
+    let updateName = teamPlot.selectAll('.team-offense-title')
+      .data(returnObj[team].data)
+      .text(d => `${d.team} Shot Locations`)
   }
-
-  changeTeam('Boston Celtics')  
+  
+  let optionData = Object.keys(returnObj)
+  let options = d3.select('select')
+    .selectAll('option')
+    .data(optionData)
+    .enter()
+    .append('option')
+    .attr('value', d => d)
+    .text(d => d)
+    .attr('selected', d => (d === 'League Average') ? 'selected' : null)
   // let circles = teamPlot.selectAll('circle')
   //   .data(returnObj)
   //   .enter()
@@ -409,12 +442,11 @@ function teamGraph (error, team, selectedTeam="Boston Celtics") {
     // .ease(d3.easeCubicIn)
     // .duration(d => d.r * 300)
 
-  teamPlot.append("text")
-    .attr("x", ((width) / 2))             
-    .attr("y", (paddingBottom))
-    .attr("text-anchor", "middle")  
-    .style("font-size", "18px") 
-    .text(`${selectedTeam} Shot Locations`);
+  function findSelectedTeam () {
+    return d3.select('select')
+      .property('value')
+  }
+
 }
 
 
@@ -494,6 +526,9 @@ function runAll (graph) {
     .remove()
 
   d3.selectAll('.info')
+    .remove()
+
+  d3.selectAll('select')
     .remove()
 
   let graphTypes = ['3 Point Shooting', 'High Usage Players', 'Team Offense']

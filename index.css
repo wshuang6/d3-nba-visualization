@@ -1,6 +1,7 @@
 html {
   max-height: 1080px;
 }
+
 body {
   min-height: 100%;
   text-align: center;
@@ -45,6 +46,10 @@ body {
   shape-rendering: crispEdges;
 }
 
+select {
+  display: block;
+  margin: auto;
+}
 .axis text {
   font-size: 14px;
 }

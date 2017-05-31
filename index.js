@@ -1,5 +1,40 @@
-// import advanced from './data/advanced.json';
-// import per36 from './data/per36.json';
+function runAll (graph) {
+  d3.select('.svg-container')
+    .selectAll('svg')
+    .remove()
+  
+  d3.selectAll('.tooltip')
+    .remove()
+
+  d3.selectAll('.info')
+    .remove()
+
+  d3.selectAll('select')
+    .remove()
+
+  let graphTypes = ['3 Point Shooting', 'High Usage Players', 'Team Offense']
+  let buttonCheck = d3.select('.button-container')
+    .selectAll('button')
+    .data(graphTypes)
+    .enter()
+    .append('button')
+    .classed('graph-select', true)
+    .text(d => d)
+    .on('click', d => runAll(d))
+
+  if (graph === '3 Point Shooting') {
+    d3.json('./data/per36.json', threeGraph)
+  }
+  else if (graph === 'High Usage Players') {
+    d3.json('./data/advancedUsgLeaders.json', usgGraph)
+  }
+  else if (graph === "Team Offense") {
+    d3.json('./data/teamShooting.json', teamGraph)
+  }
+}
+
+runAll();
+
 
 function threeGraph (error, per36) {
   let paddingLeft = 60;
@@ -22,12 +57,10 @@ function threeGraph (error, per36) {
     return {
       name: player.Player.substring(0, index),
       attempts: player['3PA'], 
-      // attempts: player['3PA']/36*player.MP*player['3P%'],
       percent: player['3P%'],
       position: player.Pos,
       team: player.Tm,
       x: attemptsScale(player['3PA']),
-      // x: attemptsScale(player['3PA']/36*player.MP*player['3P%']),
       y: percentScale(player['3P%'])
     }
   })
@@ -38,8 +71,6 @@ function threeGraph (error, per36) {
 
   let threePlot = d3.select('.svg-container')
     .append('svg')
-    // .attr('width', width)
-    // .attr('height', height)
     .attr("preserveAspectRatio", "xMinYMin meet")
     .attr("viewBox", "0 0 1200 700")
     .classed("svg-content-responsive", true); 
@@ -86,10 +117,8 @@ function threeGraph (error, per36) {
     .data(threeArray)
     .enter()
     .append('circle')
-    // .attr('cx', 4 + paddingLeft)
     .attr('cx', d => d.x)
     .attr('cy', 4)
-    // .attr('cy', d => d.y)
     .attr('r', 4)
     .attr('fill', d => returnColor(d.team))
     .on("mouseover", d => tooltip
@@ -106,13 +135,9 @@ function threeGraph (error, per36) {
     )
     .transition()
     .duration(1500)
-    // .duration(d => d.attempts*150)
-    // .attr('cx', d => d.x)
     .delay(d => d.x*1.5)
     .attr('cy', d => d.y)
     .ease(d3.easeBounceOut)
-    // .each(transitionX, 1000)
-    // .each(transitionY, 1000)
 
   threePlot.append("text")
     .attr("x", (width / 2))             
@@ -160,8 +185,6 @@ function usgGraph (error, usg) {
   
   let usgPlot = d3.select('.svg-container')
     .append('svg')
-    // .attr('width', width)
-    // .attr('height', height)
     .attr("preserveAspectRatio", "xMinYMin meet")
     .attr("viewBox", "0 0 1200 700")
     .classed("svg-content-responsive", true); 
@@ -261,8 +284,6 @@ function teamGraph (error, team, selectedTeam="Boston Celtics") {
 
   let teamPlot = d3.select('.svg-container')
     .append('svg')
-    // .attr('width', width)
-    // .attr('height', height)
     .attr("preserveAspectRatio", "xMinYMin meet")
     .attr("viewBox", "0 0 1200 700")
     .classed("svg-content-responsive", true); 
@@ -395,6 +416,7 @@ function teamGraph (error, team, selectedTeam="Boston Celtics") {
     let updatePercents = teamPlot.selectAll('.percents')
       .data(returnObj[team].data)
       .transition()
+      .ease(d3.easeCubicIn)
       .duration(1500)
       .attr('height', d => d.percentY)
       .attr('y', d => percentScale(0) - d.percentY)
@@ -404,6 +426,7 @@ function teamGraph (error, team, selectedTeam="Boston Celtics") {
     let updateLocations = teamPlot.selectAll('.locations')
       .data(returnObj[team].data)
       .transition()
+      .ease(d3.easeCubicIn)
       .duration(1500)
       .attr('height', d => d.shotY)
       .attr('y', d => percentScale(0) - d.shotY)
@@ -424,36 +447,6 @@ function teamGraph (error, team, selectedTeam="Boston Celtics") {
     .attr('value', d => d)
     .text(d => d)
     .attr('selected', d => (d === 'League Average') ? 'selected' : null)
-  // let circles = teamPlot.selectAll('circle')
-  //   .data(returnObj)
-  //   .enter()
-  //   .append('circle')
-  //   .attr('cx', d => d[selectedTeam].avgX)
-  //   .attr('cy', d => d[selectedTeam].avgY)
-  //   .attr('r', 10)
-  //   .attr('fill', 'blue')
-
-    // .on("mouseover", d => tooltip
-    //   .style("visibility", "visible")
-    //   .append('p')
-    //   .classed("tooltip", true)
-    //   .text(`${d.name}, ${d.team}, ${(d.usage)}% usage, ${(d.assist)}% assist, ${(d.ts*100).toFixed(1)}% true shooting`)
-    // )
-    // .on("mousemove", () => tooltip.style("top", (d3.event.pageY-10)+"px")
-    //   .style("left",(d3.event.pageX+10)+"px"))
-    // .on("mouseout", () => tooltip.style("visibility", "hidden")
-    //   .selectAll('p')
-    //   .remove()
-    // )
-    // .transition()
-    // .ease(d3.easeCubicIn)
-    // .duration(d => d.r * 300)
-
-  function findSelectedTeam () {
-    return d3.select('select')
-      .property('value')
-  }
-
 }
 
 
@@ -590,41 +583,3 @@ function returnDualColor (team, primary) {
       return primary ? '#0046AD' : '#D0103A';
   }
 }
-
-function runAll (graph) {
-  d3.select('.svg-container')
-    .selectAll('svg')
-    .remove()
-  
-  d3.selectAll('.tooltip')
-    .remove()
-
-  d3.selectAll('.info')
-    .remove()
-
-  d3.selectAll('select')
-    .remove()
-
-  let graphTypes = ['3 Point Shooting', 'High Usage Players', 'Team Offense']
-  let buttonCheck = d3.select('.button-container')
-    .selectAll('button')
-    .data(graphTypes)
-    .enter()
-    .append('button')
-    .classed('graph-select', true)
-    .text(d => d)
-    .on('click', d => runAll(d))
-
-  if (graph === '3 Point Shooting') {
-    d3.json('./data/per36.json', threeGraph)
-  }
-  else if (graph === 'High Usage Players') {
-    d3.json('./data/advancedUsgLeaders.json', usgGraph)
-  }
-  else if (graph === "Team Offense") {
-    d3.json('./data/teamShooting.json', teamGraph)
-  }
-}
-
-runAll();
-

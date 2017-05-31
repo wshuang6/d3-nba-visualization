@@ -226,9 +226,7 @@ function usgGraph (error, usg) {
     )
     .transition()
     .ease(d3.easeCubicIn)
-    .duration(d => {console.log(d.r);
-      return d.r * 400})
-    .delay(d => (d.r > 9) ? d.r ^ 4 : d.r ^ 2)
+    .duration(d => d.r * 300 * d.r/9)
     .attr('r', d => d.r)
 
   usgPlot.append("text")

@@ -43,7 +43,6 @@ function threeGraph (error, per36) {
   let width = 1200;
   let attemptsScale = d3.scaleLinear()
     .domain([0.5, 12])
-    // .domain([0, 350])
     .range([paddingLeft, width - paddingLeft])
 
   let percentScale = d3.scaleLinear()
